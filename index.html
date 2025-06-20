@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Calculadora Comparativa da Família</title>
+    <style>
+        :root {
+            --cor-principal: #0d47a1; /* Azul escuro */
+            --cor-sucesso: #155724;
+            --fundo-sucesso: #d4edda;
+            --cor-cliente: #721c24;
+            --fundo-cliente: #f8d7da;
+            --cor-diferenca: #004085;
+            --fundo-diferenca: #cce5ff;
+            --cor-whatsapp: #25D366;
+        }
+
+        html {
+            box-sizing: border-box;
+        }
+        *, *:before, *:after {
+            box-sizing: inherit;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            margin: 0;
+            padding: 20px 10px 120px 10px; /* Espaço no topo/lados e MUITO espaço no fundo para o rodapé fixo não cobrir nada */
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: var(--cor-principal);
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #555;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            font-size: 1.5em;
+            text-align: center;
+            -moz-appearance: textfield; /* Para Firefox */
+        }
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        /* --- O RODAPÉ FIXO --- */
+        .footer-fixo {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: #ffffff;
+            padding: 15px 20px;
+            box-shadow: 0 -4px 10px rgba(0,0,0,0.1);
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+        }
+
+        .btn-calcular {
+            background-color: #1e88e5;
+            color: white;
+            padding: 15px 0;
+            width: 100%;
+            max-width: 400px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.3em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-transform: uppercase;
+        }
+        .btn-calcular:hover {
+            background-color: #1565c0;
+        }
+        /* --- FIM DO RODAPÉ FIXO --- */
+
+
+        #resultado {
+            margin-top: 30px;
+            overflow-x: auto; /* Permite rolar a tabela horizontalmente se não couber */
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            padding: 12px 8px;
+            border: 1px solid #ddd;
+            text-align: center;
+            white-space: nowrap; /* Impede que o texto quebre linha */
+        }
+
+        th {
+            background-color: #e9ecef;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .parcela-id {
+            font-weight: bold;
+        }
+        .preco-familia {
+            background-color: var(--fundo-sucesso);
+            color: var(--cor-sucesso);
+            font-weight: bold;
+        }
+        .preco-cliente {
+            background-color: var(--fundo-cliente);
+            color: var(--cor-cliente);
+        }
+        .diferenca {
+            background-color: var(--fundo-diferenca);
+            color: var(--cor-diferenca);
+            font-weight: bold;
+        }
+        
+        /* --- BOTÃO DO WHATSAPP --- */
+        .btn-whatsapp {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--cor-whatsapp);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 0.9em;
+            gap: 5px;
+        }
+        .btn-whatsapp svg {
+            width: 16px;
+            height: 16px;
+            fill: white;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Calculadora da Família</h1>
+        <label for="valorTotal">Qual o valor do produto?</label>
+        <input type="number" id="valorTotal" placeholder="R$ 0,00" step="0.01">
+        <div id="resultado">
+            <!-- A tabela aparece aqui -->
+        </div>
+    </div>
+
+    <!-- BOTÃO DE CALCULAR FICA AQUI FORA, NO RODAPÉ FIXO -->
+    <div class="footer-fixo">
+        <button class="btn-calcular" onclick="calcularParcelas()">Comparar Parcelas</button>
+    </div>
+
+    <script>
+        const formatarMoeda = (valor) => valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+        function calcularParcelas() {
+            const valorInput = document.getElementById('valorTotal');
+            const valorBase = parseFloat(valorInput.value);
+
+            if (isNaN(valorBase) || valorBase <= 0) {
+                document.getElementById('resultado').innerHTML = "<p style='color:red; font-weight:bold; text-align:center;'>Bota um valor aí, pô!</p>";
+                return;
+            }
+
+            // TAXAS ATUALIZADAS CONFORME PEDIDO
+            const pontos = {
+                cliente: { taxaInicial: 0.20, taxaFinal: 0.12 }, // 3x = 20%, 48x = 12%
+                familia: { taxaInicial: 0.10, taxaFinal: 0.05 }  // Mantido: 3x = 10%, 48x = 5%
+            };
+            const parcelaInicial = 3;
+            const parcelaFinal = 48;
+            const intervaloTotal = parcelaFinal - parcelaInicial;
+            const seuNumeroWhatsapp = "5544998408460"; // Número com código do país
+
+            let tabelaConteudo = '';
+
+            for (let numParcelas = parcelaInicial; numParcelas <= parcelaFinal; numParcelas += 3) {
+                const progresso = (numParcelas - parcelaInicial) / intervaloTotal;
+
+                const taxaAtualCliente = pontos.cliente.taxaInicial - (progresso * (pontos.cliente.taxaInicial - pontos.cliente.taxaFinal));
+                const taxaAtualFamilia = pontos.familia.taxaInicial - (progresso * (pontos.familia.taxaInicial - pontos.familia.taxaFinal));
+
+                const parcelaCliente = (valorBase * (1 + taxaAtualCliente)) / numParcelas;
+                const parcelaFamilia = (valorBase * (1 + taxaAtualFamilia)) / numParcelas;
+                const diferenca = parcelaCliente - parcelaFamilia;
+
+                // MONTAGEM DA MENSAGEM DO WHATSAPP
+                const mensagemWhatsapp = `Opa, blz? Vi na sua calculadora!\n\nUm produto de *${formatarMoeda(valorBase)}* parcelado em *${numParcelas}x*:\n\n✅ *Minha Parcela (Família):* ${formatarMoeda(parcelaFamilia)}\n❌ *Parcela (Cliente Normal):* ${formatarMoeda(parcelaCliente)}\n\nBaita desconto! Valeu!`;
+                
+                const linkWhatsapp = `https://wa.me/${seuNumeroWhatsapp}?text=${encodeURIComponent(mensagemWhatsapp)}`;
+
+                tabelaConteudo += `
+                    <tr>
+                        <td class="parcela-id">${numParcelas}x</td>
+                        <td class="preco-familia">${formatarMoeda(parcelaFamilia)}</td>
+                        <td class="preco-cliente">${formatarMoeda(parcelaCliente)}</td>
+                        <td class="diferenca">${formatarMoeda(diferenca)}</td>
+                        <td>
+                            <a href="${linkWhatsapp}" class="btn-whatsapp" target="_blank" rel="noopener noreferrer">
+                                <svg viewBox="0 0 896 896"><path d="M730.2 626.5c-15.8-7.8-93.2-46-107.8-51.2-14.5-5.2-25.2-7.8-35.8 7.8-10.5 15.8-40.8 51.2-50 61.8-9.2 10.5-18.5 11.8-34.2 4-15.8-7.8-67-24.8-127.5-78.8-47-42-78.8-93.2-88-109-9.2-15.8-1-24.2 7-32 7-7 15.8-18.5 23.5-24.8 7.8-6.2 10.5-10.5 15.8-18.5 5.2-7.8 2.5-15.8-2.5-23.5-5.2-7.8-35.8-86.8-49-118.2-13.2-31.2-26.5-27-35.8-27.5-9.2 0-19.8-1-30.5-1s-27.8 4-42 20-53.8 52.5-53.8 127.5c0 75 55 147.8 62.8 158.2 7.8 10.5 109 166.8 266 233.5 156.8 66.5 156.8 53 184 52 27.5-.8 86.8-35.2 99-69.2 12-34 12-63.2 8.5-69-3.5-6-14-9.2-30-17z"/></svg>
+                                Zap
+                            </a>
+                        </td>
+                    </tr>
+                `;
+            }
+
+            const tabelaHTML = `
+                <h2>Comparação Detalhada</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Plano</th>
+                            <th>Sua Parcela</th>
+                            <th>Parcela Cliente</th>
+                            <th>Economia por Parcela</th>
+                            <th>Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${tabelaConteudo}
+                    </tbody>
+                </table>
+            `;
+
+            document.getElementById('resultado').innerHTML = tabelaHTML;
+        }
+    </script>
+
+</body>
+</html>
