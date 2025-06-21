@@ -2,255 +2,621 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Calculadora Comparativa da Família</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Sistema de Orçamento VIP com parcelas normais e comparação com Cliente Normal.">
+    <meta name="author" content="Your Name">
+    <title>Orçamento VIP</title>
     <style>
         :root {
-            --cor-principal: #0d47a1; /* Azul escuro */
-            --cor-sucesso: #155724;
-            --fundo-sucesso: #d4edda;
-            --cor-cliente: #721c24;
-            --fundo-cliente: #f8d7da;
-            --cor-diferenca: #004085;
-            --fundo-diferenca: #cce5ff;
-            --cor-whatsapp: #25D366;
+            --cor-fundo: #f4f6f8;
+            --cor-superficie: #ffffff;
+            --cor-texto-principal: #1a237e;
+            --cor-texto-secundario: #2d3748;
+            --cor-texto-suave: #718096;
+            --cor-borda: #e2e8f0;
+            --cor-principal: #1b4d8e;
+            --cor-secundaria: #3182ce;
+            --cor-sucesso: #2f855a;
+            --fundo-sucesso: #e6fffa;
+            --cor-perigo: #c53030;
+            --fundo-perigo: #fff5f5;
+            --cor-alerta: #b7791f;
+            --fundo-alerta: #fefcbf;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
         }
 
-        html {
-            box-sizing: border-box;
+        body.dark-mode {
+            --cor-fundo: #1a202c;
+            --cor-superficie: #2d3748;
+            --cor-texto-principal: #b794f4;
+            --cor-texto-secundario: #e2e8f0;
+            --cor-texto-suave: #a0aec0;
+            --cor-borda: #4a5568;
+            --cor-principal: #805ad5;
+            --cor-secundaria: #553c9a;
+            --fundo-sucesso: #2f855a;
+            --fundo-perigo: #742a2a;
+            --fundo-alerta: #744210;
         }
-        *, *:before, *:after {
-            box-sizing: inherit;
-        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f0f2f5;
-            color: #333;
-            margin: 0;
-            padding: 20px 10px 120px 10px; /* Espaço no topo/lados e MUITO espaço no fundo para o rodapé fixo não cobrir nada */
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--cor-fundo);
+            color: var(--cor-texto-secundario);
+            line-height: 1.5;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
+
+        .tela {
+            display: none;
+            padding: 20px 15px 120px;
+            min-height: 100vh;
+        }
+
+        .tela.ativa { display: block; }
 
         .container {
-            width: 100%;
-            max-width: 800px;
-            margin: 0 auto;
-            background-color: #fff;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            background-color: var(--cor-superficie);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            max-width: 600px;
+            margin: 2rem auto;
+            transition: background-color 0.3s ease;
         }
 
-        h1 {
+        h1, h2 {
             color: var(--cor-principal);
             text-align: center;
-            margin-top: 0;
-            margin-bottom: 25px;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        p {
+            color: var(--cor-texto-suave);
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
         }
 
         label {
             display: block;
-            font-size: 1.1em;
-            font-weight: bold;
-            color: #555;
-            text-align: center;
-            margin-bottom: 10px;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--cor-texto-suave);
         }
 
-        input[type="number"] {
+        input, select {
             width: 100%;
-            padding: 15px;
-            border: 2px solid #ccc;
+            padding: 0.75rem;
+            font-size: 1rem;
+            border: 2px solid var(--cor-borda);
             border-radius: 8px;
-            font-size: 1.5em;
-            text-align: center;
-            -moz-appearance: textfield; /* Para Firefox */
-        }
-        input[type="number"]::-webkit-outer-spin-button,
-        input[type="number"]::-webkit-inner-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
+            background-color: var(--cor-fundo);
+            color: var(--cor-texto-secundario);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
         }
 
-        /* --- O RODAPÉ FIXO --- */
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--cor-secundaria);
+            box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.2);
+        }
+
+        .error-message {
+            color: var(--cor-perigo);
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+            text-align: center;
+            min-height: 1.25rem;
+        }
+
         .footer-fixo {
             position: fixed;
             bottom: 0;
             left: 0;
             width: 100%;
-            background-color: #ffffff;
-            padding: 15px 20px;
-            box-shadow: 0 -4px 10px rgba(0,0,0,0.1);
-            z-index: 100;
-            display: flex;
-            justify-content: center;
+            background-color: var(--cor-superficie);
+            padding: 1rem;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
         }
 
-        .btn-calcular {
-            background-color: #1e88e5;
-            color: white;
-            padding: 15px 0;
+        .btn-principal {
             width: 100%;
-            max-width: 400px;
+            padding: 0.75rem;
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #fff;
+            background-color: var(--cor-secundaria);
             border: none;
             border-radius: 8px;
-            font-size: 1.3em;
-            font-weight: bold;
             cursor: pointer;
-            transition: background-color 0.3s;
-            text-transform: uppercase;
-        }
-        .btn-calcular:hover {
-            background-color: #1565c0;
-        }
-        /* --- FIM DO RODAPÉ FIXO --- */
-
-
-        #resultado {
-            margin-top: 30px;
-            overflow-x: auto; /* Permite rolar a tabela horizontalmente se não couber */
+            transition: background-color 0.3s ease, transform 0.2s ease;
         }
 
-        table {
+        .btn-principal:hover:not(:disabled) {
+            background-color: var(--cor-principal);
+            transform: translateY(-2px);
+        }
+
+        .btn-principal:disabled {
+            background-color: #a0aec0;
+            cursor: not-allowed;
+        }
+
+        #data-pagamento-info {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1rem;
+            padding: 0.75rem;
+            border-radius: 8px;
+            text-align: center;
+            color: #fff;
+            margin-top: 0.75rem;
+            transition: background-color 0.3s ease;
+        }
+
+        .dias-perigo { background-color: var(--cor-perigo); }
+        .dias-alerta { background-color: var(--cor-alerta); }
+        .dias-sucesso { background-color: var(--cor-sucesso); }
+
+        .theme-switch-wrapper {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1001;
+        }
+
+        .theme-switch {
+            display: inline-block;
+            height: 34px;
+            position: relative;
+            width: 60px;
+        }
+
+        .theme-switch input {
+            display: none;
+        }
+
+        .slider {
+            background-color: #cbd5e0;
+            bottom: 0;
+            cursor: pointer;
+            left: 0;
+            position: absolute;
+            right: 0;
+            top: 0;
+            transition: background-color 0.4s ease;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            background-color: #fff;
+            bottom: 4px;
+            content: "";
+            height: 26px;
+            left: 4px;
+            position: absolute;
+            transition: transform 0.4s ease;
+            width: 26px;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--cor-principal);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        #tabela-orcamento {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 15px;
+            margin-top: 1rem;
         }
 
-        th, td {
-            padding: 12px 8px;
-            border: 1px solid #ddd;
+        #tabela-orcamento th, #tabela-orcamento td {
+            padding: 0.75rem;
+            border: 1px solid var(--cor-borda);
             text-align: center;
-            white-space: nowrap; /* Impede que o texto quebre linha */
         }
 
-        th {
-            background-color: #e9ecef;
-            font-weight: bold;
-            font-size: 0.9em;
+        #tabela-orcamento th {
+            background-color: var(--cor-fundo);
+            font-weight: 600;
         }
 
-        .parcela-id {
-            font-weight: bold;
+        #tabela-orcamento tbody tr {
+            cursor: pointer;
+            transition: background-color 0.3s ease;
         }
-        .preco-familia {
+
+        #tabela-orcamento tbody tr:hover {
             background-color: var(--fundo-sucesso);
-            color: var(--cor-sucesso);
-            font-weight: bold;
-        }
-        .preco-cliente {
-            background-color: var(--fundo-cliente);
-            color: var(--cor-cliente);
-        }
-        .diferenca {
-            background-color: var(--fundo-diferenca);
-            color: var(--cor-diferenca);
-            font-weight: bold;
-        }
-        
-        /* --- BOTÃO DO WHATSAPP --- */
-        .btn-whatsapp {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            background-color: var(--cor-whatsapp);
-            color: white;
-            padding: 8px 12px;
-            border-radius: 5px;
-            text-decoration: none;
-            font-weight: bold;
-            font-size: 0.9em;
-            gap: 5px;
-        }
-        .btn-whatsapp svg {
-            width: 16px;
-            height: 16px;
-            fill: white;
         }
 
+        #tabela-orcamento tbody tr.selecionada {
+            background-color: var(--fundo-sucesso);
+            font-weight: 600;
+        }
+
+        #tabela-orcamento tbody tr.nao-selecionada {
+            opacity: 0.7;
+        }
+
+        .btn-adicionar, .btn-remover {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-adicionar {
+            background-color: var(--cor-secundaria);
+            color: #fff;
+            margin-top: 0.5rem;
+        }
+
+        .btn-adicionar:hover {
+            background-color: var(--cor-principal);
+        }
+
+        .btn-remover {
+            background-color: var(--cor-perigo);
+            color: #fff;
+            margin-left: 0.5rem;
+        }
+
+        .btn-remover:hover {
+            background-color: #9b2c2c;
+        }
+
+        .produto-row {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .produto-row input {
+            flex: 1;
+        }
+
+        .diferenca-negativa { color: var(--cor-sucesso); }
+        .diferenca-positiva { color: var(--cor-perigo); }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 1.5rem;
+                margin: 1rem;
+            }
+
+            .btn-principal {
+                font-size: 1rem;
+            }
+
+            #tabela-orcamento th, #tabela-orcamento td {
+                padding: 0.5rem;
+                font-size: 0.875rem;
+            }
+        }
     </style>
 </head>
 <body>
+    <div class="theme-switch-wrapper">
+        <label class="theme-switch" for="checkbox">
+            <input type="checkbox" id="checkbox" aria-label="Alternar modo noturno" onchange="toggleDarkMode(this.checked)">
+            <div class="slider round"></div>
+        </label>
+    </div>
 
-    <div class="container">
-        <h1>Calculadora da Família</h1>
-        <label for="valorTotal">Qual o valor do produto?</label>
-        <input type="number" id="valorTotal" placeholder="R$ 0,00" step="0.01">
-        <div id="resultado">
-            <!-- A tabela aparece aqui -->
+    <div id="tela-login" class="tela ativa">
+        <div class="container">
+            <h1>Orçamento VIP</h1>
+            <p>Entre com sua senha de acesso ou deixe em branco para simular como Cliente Normal.</p>
+            <div class="input-group">
+                <label for="senha">Senha de Acesso</label>
+                <input type="password" id="senha" placeholder="******" aria-describedby="login-error">
+            </div>
+            <div id="login-error" class="error-message" role="alert"></div>
         </div>
     </div>
 
-    <!-- BOTÃO DE CALCULAR FICA AQUI FORA, NO RODAPÉ FIXO -->
+    <div id="tela-identificacao" class="tela">
+        <div class="container">
+            <h1>Identificação</h1>
+            <p>Insira seus dados pessoais para prosseguir.</p>
+            <div class="input-group">
+                <label for="nome">Nome Completo</label>
+                <input type="text" id="nome" placeholder="Seu nome e sobrenome" aria-describedby="identificacao-error">
+            </div>
+            <div class="input-group">
+                <label for="cpf">CPF</label>
+                <input type="tel" id="cpf" placeholder="000.000.000-00" maxlength="14" aria-describedby="identificacao-error">
+            </div>
+            <div id="identificacao-error" class="error-message" role="alert"></div>
+        </div>
+    </div>
+
+    <div id="tela-produtos" class="tela">
+        <div class="container">
+            <h2 id="welcome-message-produtos"></h2>
+            <p>Adicione os produtos e o valor da entrada, se desejar.</p>
+            <div id="lista-produtos"></div>
+            <button class="btn-adicionar" onclick="adicionarProduto()">+ Adicionar Produto</button>
+            <div id="total-produtos" style="text-align: center; font-size: 1.25rem; font-weight: 600; color: var(--cor-principal); margin: 1.5rem 0;"></div>
+            <div class="input-group">
+                <label for="valor-entrada">Valor de Entrada (opcional)</label>
+                <input type="text" id="valor-entrada" placeholder="R$ 0,00">
+            </div>
+            <div class="input-group">
+                <label for="dia-pagamento">Melhor dia para pagamento</label>
+                <select id="dia-pagamento" aria-label="Selecionar dia de pagamento">
+                    <option value="5">Dia 05</option>
+                    <option value="10">Dia 10</option>
+                    <option value="15">Dia 15</option>
+                    <option value="20">Dia 20</option>
+                    <option value="25">Dia 25</option>
+                    <option value="30">Dia 30</option>
+                </select>
+                <div id="data-pagamento-info" role="status"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="tela-orcamento" class="tela">
+        <div class="container" style="max-width: 800px;">
+            <h1>Opções de Parcelamento</h1>
+            <p>Selecione a opção de parcelamento desejada. Diferenças são comparadas com Cliente Normal.</p>
+            <div id="resultado-calculo" style="overflow-x: auto;"></div>
+        </div>
+    </div>
+
+    <div id="tela-resumo" class="tela">
+        <div id="resumo-final" class="container"></div>
+    </div>
+
     <div class="footer-fixo">
-        <button class="btn-calcular" onclick="calcularParcelas()">Comparar Parcelas</button>
+        <button id="btn-principal" class="btn-principal">Entrar</button>
     </div>
 
     <script>
-        const formatarMoeda = (valor) => valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        // --- BANCO DE DADOS DE MENSAGENS E CLIENTES ---
+        const MENSAGENS = {
+            normal: ["Olá! Aqui estão suas condições de parcelamento personalizadas – tudo sob medida pra você!", "Bem-vindo! Parcelamento justo, transparente e sem letras miúdas. Bora fechar?", "Cliente novo por aqui, mas já com condição especial! Dê uma olhada nessas opções 👇", "Seu crédito está aprovado! Confira suas parcelas com juros acessíveis.", "A primeira parcela é mais salgada, mas as últimas são mais leves. Tudo pensado pra facilitar pra você!"],
+            bronze: ["Você já tem um histórico com a gente. As condições melhoraram – aproveite! 💪", "Nível Bronze já é vantagem! Olha só essas parcelas personalizadas pra você!", "Cliente Bronze tem sempre mais flexibilidade. Confira suas condições!", "Pensamos em você! Parcelas suaves pra quem já está na jornada com a gente!", "Que tal parcelas com juros decrescentes? Acesse e veja as vantagens! 📉"],
+            prata: ["Bem-vindo ao nível Prata! As parcelas já ficaram mais inteligentes pra você.", "Cliente fiel merece crédito facilitado. Olha essas condições 💳", "Sua evolução é reconhecida! Parcelamento com mais vantagens liberado.", "Primeira parcela mais justa, últimas bem mais leves. Bora aproveitar?", "Prata é brilho e equilíbrio. Veja as condições feitas pra você brilhar!"],
+            ouro: ["Ouro puro! Condições de crédito com juros reduzidos só pra você 💰", "Cliente Ouro? Então veja as vantagens exclusivas abaixo 👇", "Confiança vale ouro! Aproveite as parcelas com taxas preferenciais!", "A cada mês, sua parcela fica mais leve. Só pra quem é nível ouro!", "Quem é Ouro tem acesso a crédito premium. Veja suas opções especiais."],
+            platinum: ["Nível Platinum! Você desbloqueou condições TOP de parcelamento. 🧾✨", "Tá preparado pra pagar menos no fim? Condição Platinum te entrega isso!", "Você está em outro nível. Veja as opções que só clientes Platinum recebem!", "Parcelamento pensado com inteligência financeira. Só pra quem é Platinum.", "Seu perfil tem vantagens diferenciadas. Clique e confira suas condições."],
+            vip: ["Cliente VIP merece tratamento diferenciado. Olha essa condição exclusiva! 🔝", "Parcelas feitas com carinho, só pra você. VIP de verdade sente no bolso 💼", "Angelica, como você, já tem condição de família. Espia essa tabela!", "Cada parcela foi pensada pra te favorecer. VIP é VIP, né? 😎", "Olha que privilégio: juros reduzindo mês a mês. Só VIPs têm isso."],
+            master: ["Master desbloqueado! Veja o parcelamento estratégico que preparamos 🧠", "Você chegou no nível Master, e isso vale condição TOP!", "Juros decrescentes e prioridade nas negociações. Aproveite agora!", "Sabe o que clientes Master ganham? Menos juros e mais controle!", "Seu perfil é especial, então fizemos condições à altura. Confira!"],
+            elite: ["Elite tem acesso antecipado às melhores condições. Essa é só pra você!", "Um cliente do seu nível merece crédito de primeira. Veja as opções!", "Elite resolve no detalhe. Parcelas otimizadas e flexíveis 💼", "Condições mais leves, mais ágeis e mais vantajosas. Isso é ser Elite.", "Confiança de sobra? A gente recompensa. Confira suas condições especiais!"],
+            premium: ["Premium, seu parcelamento já vem com vantagem! 🎯", "Você já faz parte da nossa elite financeira. Olha que tabela maravilhosa!", "Vantagens reais, com taxas mais baixas e segurança. Confira 👇", "Premium é quem recebe o melhor da casa. Parcelamento diferenciado!", "Personalizado, flexível e inteligente. Assim são suas parcelas Premium."],
+            diamante: ["💎 Diamante é raridade, e sua condição de parcelamento também!", "Redução progressiva nos juros: só quem é Diamante tem!", "Vantagens lapidadas só pra você. Confira sua tabela 💎", "Parcelas feitas com inteligência e confiança. Isso é ser Diamante!", "Sua fidelidade brilha, e suas condições também. Veja o que separamos!"],
+            familia: ["👑 Angelica, que bom te ver! Preparei as condições da família pra você: parcelas super especiais!", "Família é prioridade! Você tem a menor taxa da casa e as melhores opções 💞", "Aqui é tratamento de casa: condição com carinho e respeito pela confiança ❤️", "Só pra família: parcelamento com juros caindo e confiança subindo!", "Angelica, pra você tudo é diferente: olha essa condição VIP FAMÍLIA 👑", "Só quem é de dentro recebe essa tabela. A casa é sua, aproveite!", "Parcelas feitas com amor e inteligência financeira. Só pra você!", "Confiança de família se paga com condição justa. Veja as parcelas.", "Juros personalizados e cuidado total. Aqui é outra história!", "Família tem prioridade, respeito e vantagem. Sua tabela prova isso."]
+        };
 
-        function calcularParcelas() {
-            const valorInput = document.getElementById('valorTotal');
-            const valorBase = parseFloat(valorInput.value);
+        // --- BANCO DE DADOS E VARIÁVEIS GLOBAIS ---
+        const DADOS_CLIENTES = {
+            '683668':         { nivel: 'Cliente Normal', icone: '🟢', taxaInicial: 0.20, taxaFinal: 0.12, msgs: MENSAGENS.normal },
+            '026836':   { nivel: 'Bronze', icone: '🥉', taxaInicial: 0.19, taxaFinal: 0.115, msgs: MENSAGENS.bronze },
+            '036836':   { nivel: 'Prata', icone: '🥈', taxaInicial: 0.18, taxaFinal: 0.11, msgs: MENSAGENS.prata },
+            '046836':   { nivel: 'Ouro', icone: '🥇', taxaInicial: 0.17, taxaFinal: 0.10, msgs: MENSAGENS.ouro },
+            '056836':   { nivel: 'Platinum', icone: '💎', taxaInicial: 0.16, taxaFinal: 0.09, msgs: MENSAGENS.platinum },
+            '066836':   { nivel: 'VIP', icone: '🔝', taxaInicial: 0.15, taxaFinal: 0.085, msgs: MENSAGENS.vip },
+            '076836':   { nivel: 'Master', icone: '🧠', taxaInicial: 0.14, taxaFinal: 0.08, msgs: MENSAGENS.master },
+            '086836':   { nivel: 'Elite', icone: '💼', taxaInicial: 0.13, taxaFinal: 0.07, msgs: MENSAGENS.elite },
+            '096836':   { nivel: 'Premium', icone: '🎯', taxaInicial: 0.12, taxaFinal: 0.06, msgs: MENSAGENS.premium },
+            '106836':   { nivel: 'Diamante', icone: '💎', taxaInicial: 0.11, taxaFinal: 0.055, msgs: MENSAGENS.diamante },
+            '116836':   { nivel: 'Família', icone: '👑', taxaInicial: 0.09, taxaFinal: 0.04, msgs: MENSAGENS.familia }
+        };
 
-            if (isNaN(valorBase) || valorBase <= 0) {
-                document.getElementById('resultado').innerHTML = "<p style='color:red; font-weight:bold; text-align:center;'>Bota um valor aí, pô!</p>";
+        let estado = {};
+        const seuNumeroWhatsapp = "5544998408460";
+
+        function toggleDarkMode(isChecked) {
+            document.body.classList.toggle('dark-mode', isChecked);
+            localStorage.setItem('theme', isChecked ? 'dark' : 'light');
+        }
+
+        function resetarEstado() {
+            estado = {
+                etapa: 'login',
+                clienteAtual: null,
+                nome: '',
+                cpf: '',
+                dataAtual: new Date(),
+                produtos: [],
+                valorTotalProdutos: 0,
+                valorEntrada: 0,
+                valorFinanciado: 0,
+                diaPagamento: 5,
+                dataPrimeiraParcela: null,
+                dataUltimaParcela: null,
+                parcelaEscolhida: null
+            };
+        }
+
+        function proximaEtapa() {
+            const funcoesEtapa = {
+                login: fazerLogin,
+                identificacao: processarIdentificacao,
+                produtos: processarProdutos,
+                orcamento: processarOrcamento,
+                resumo: enviarWhatsapp
+            };
+            funcoesEtapa[estado.etapa]();
+        }
+
+        function mudarTela(idTela, textoBotao, novaEtapa) {
+            document.querySelectorAll('.tela').forEach(t => t.classList.remove('ativa'));
+            document.getElementById(idTela).classList.add('ativa');
+            const btn = document.getElementById('btn-principal');
+            btn.textContent = textoBotao;
+            btn.disabled = false;
+            estado.etapa = novaEtapa;
+        }
+
+        function fazerLogin() {
+            const senha = document.getElementById('senha').value.trim();
+            const errorDiv = document.getElementById('login-error');
+            errorDiv.textContent = '';
+
+            if (DADOS_CLIENTES.hasOwnProperty(senha)) {
+                resetarEstado();
+                estado.clienteAtual = DADOS_CLIENTES[senha];
+                mudarTela('tela-identificacao', 'Prosseguir', 'identificacao');
+            } else {
+                errorDiv.textContent = 'Senha inválida. Use uma senha válida (ex.: 116836 para Família) ou deixe em branco para Normal.';
+            }
+        }
+
+        function processarIdentificacao() {
+            const nomeInput = document.getElementById('nome');
+            const cpfInput = document.getElementById('cpf');
+            const errorDiv = document.getElementById('identificacao-error');
+            errorDiv.textContent = '';
+
+            const nome = nomeInput.value.trim();
+            const cpf = cpfInput.value;
+
+            if (nome.split(' ').length < 2) {
+                errorDiv.textContent = 'Digite seu nome completo (nome e sobrenome).';
+                return;
+            }
+            if (!validarCPF(cpf)) {
+                errorDiv.textContent = 'CPF inválido. Verifique os dados.';
                 return;
             }
 
-            // TAXAS ATUALIZADAS CONFORME PEDIDO
-            const pontos = {
-                cliente: { taxaInicial: 0.20, taxaFinal: 0.12 }, // 3x = 20%, 48x = 12%
-                familia: { taxaInicial: 0.10, taxaFinal: 0.05 }  // Mantido: 3x = 10%, 48x = 5%
-            };
-            const parcelaInicial = 3;
-            const parcelaFinal = 48;
-            const intervaloTotal = parcelaFinal - parcelaInicial;
-            const seuNumeroWhatsapp = "5544998408460"; // Número com código do país
+            estado.nome = nome;
+            estado.cpf = cpf;
 
+            const primeiroNome = estado.nome.split(' ')[0];
+            const msgPool = estado.clienteAtual.msgs;
+            const randomIndex = Math.floor(Math.random() * msgPool.length);
+            let welcomeMsg = msgPool[randomIndex].replace(/Angelica/g, primeiroNome);
+
+            document.getElementById('welcome-message-produtos').innerHTML = welcomeMsg;
+            mudarTela('tela-produtos', 'Ver Opções de Pagamento', 'produtos');
+            adicionarProduto();
+            atualizarTotalProdutos();
+            calcularProximaDataPagamento();
+        }
+
+        function processarProdutos() {
+            estado.produtos = [];
+            estado.valorTotalProdutos = 0;
+            document.querySelectorAll('.produto-row').forEach(row => {
+                const nome = row.querySelector('.nome').value.trim();
+                const valor = desformatarValor(row.querySelector('.valor').value);
+                if (nome && valor > 0) {
+                    estado.produtos.push({ nome, valor: formatarMoeda(valor) });
+                    estado.valorTotalProdutos += valor;
+                }
+            });
+
+            if (estado.produtos.length === 0) {
+                alert('Adicione pelo menos um produto válido.');
+                return;
+            }
+
+            estado.valorEntrada = desformatarValor(document.getElementById('valor-entrada').value);
+            if (estado.valorEntrada >= estado.valorTotalProdutos) {
+                alert('O valor da entrada não pode ser maior ou igual ao total dos produtos.');
+                return;
+            }
+            estado.valorFinanciado = estado.valorTotalProdutos - estado.valorEntrada;
+
+            mudarTela('tela-orcamento', 'Confirmar Parcela', 'orcamento');
+            document.getElementById('btn-principal').disabled = true;
+            gerarTabelaOrcamento();
+        }
+
+        function processarOrcamento() {
+            if (!estado.parcelaEscolhida) {
+                alert('Selecione uma opção de parcelamento.');
+                return;
+            }
+            mudarTela('tela-resumo', 'Finalizar via WhatsApp', 'resumo');
+            gerarResumoFinal();
+        }
+
+        function enviarWhatsapp() {
+            window.open(estado.linkWhatsappFinal, '_blank');
+            location.reload();
+        }
+
+        function adicionarProduto() {
+            const lista = document.getElementById('lista-produtos');
+            if (lista.children.length >= 10) {
+                alert('Limite de 10 produtos atingido.');
+                return;
+            }
+            const div = document.createElement('div');
+            div.className = 'produto-row';
+            div.innerHTML = `
+                <input type="text" class="nome" placeholder="Nome do Produto" aria-label="Nome do produto">
+                <input type="text" class="valor" placeholder="R$ 0,00" aria-label="Valor do produto">
+                <button class="btn-remover" onclick="removerProduto(this)" aria-label="Remover produto">X</button>
+            `;
+            lista.appendChild(div);
+            div.querySelector('.valor').addEventListener('input', (e) => {
+                formatarInputMoeda(e);
+                atualizarTotalProdutos();
+            });
+        }
+
+        function removerProduto(btn) {
+            btn.parentElement.remove();
+            atualizarTotalProdutos();
+        }
+
+        function atualizarTotalProdutos() {
+            let total = 0;
+            document.querySelectorAll('.produto-row .valor').forEach(input => {
+                total += desformatarValor(input.value);
+            });
+            document.getElementById('total-produtos').textContent = `Total: ${formatarMoeda(total)}`;
+        }
+
+        function gerarTabelaOrcamento() {
+            const taxasVip = estado.clienteAtual;
+            const taxasNormal = DADOS_CLIENTES[''];
             let tabelaConteudo = '';
-
-            for (let numParcelas = parcelaInicial; numParcelas <= parcelaFinal; numParcelas += 3) {
-                const progresso = (numParcelas - parcelaInicial) / intervaloTotal;
-
-                const taxaAtualCliente = pontos.cliente.taxaInicial - (progresso * (pontos.cliente.taxaInicial - pontos.cliente.taxaFinal));
-                const taxaAtualFamilia = pontos.familia.taxaInicial - (progresso * (pontos.familia.taxaInicial - pontos.familia.taxaFinal));
-
-                const parcelaCliente = (valorBase * (1 + taxaAtualCliente)) / numParcelas;
-                const parcelaFamilia = (valorBase * (1 + taxaAtualFamilia)) / numParcelas;
-                const diferenca = parcelaCliente - parcelaFamilia;
-
-                // MONTAGEM DA MENSAGEM DO WHATSAPP
-                const mensagemWhatsapp = `Opa, blz? Vi na sua calculadora!\n\nUm produto de *${formatarMoeda(valorBase)}* parcelado em *${numParcelas}x*:\n\n✅ *Minha Parcela (Família):* ${formatarMoeda(parcelaFamilia)}\n❌ *Parcela (Cliente Normal):* ${formatarMoeda(parcelaCliente)}\n\nBaita desconto! Valeu!`;
+            for (let n = 3; n <= 48; n += 3) {
+                const progresso = (n - 3) / (48 - 3);
+                const taxaAtual = taxasVip.taxaInicial - (progresso * (taxasVip.taxaInicial - taxasVip.taxaFinal));
+                const taxaNormal = taxasNormal.taxaInicial - (progresso * (taxasNormal.taxaInicial - taxasNormal.taxaFinal));
                 
-                const linkWhatsapp = `https://wa.me/${seuNumeroWhatsapp}?text=${encodeURIComponent(mensagemWhatsapp)}`;
-
+                const parcela = (estado.valorFinanciado * (1 + taxaAtual)) / n;
+                const parcelaNormal = (estado.valorFinanciado * (1 + taxaNormal)) / n;
+                
+                const diffParcela = parcela - parcelaNormal;
+                const diffClass = diffParcela > 0 ? 'diferenca-positiva' : 'diferenca-negativa';
+                
                 tabelaConteudo += `
-                    <tr>
-                        <td class="parcela-id">${numParcelas}x</td>
-                        <td class="preco-familia">${formatarMoeda(parcelaFamilia)}</td>
-                        <td class="preco-cliente">${formatarMoeda(parcelaCliente)}</td>
-                        <td class="diferenca">${formatarMoeda(diferenca)}</td>
-                        <td>
-                            <a href="${linkWhatsapp}" class="btn-whatsapp" target="_blank" rel="noopener noreferrer">
-                                <svg viewBox="0 0 896 896"><path d="M730.2 626.5c-15.8-7.8-93.2-46-107.8-51.2-14.5-5.2-25.2-7.8-35.8 7.8-10.5 15.8-40.8 51.2-50 61.8-9.2 10.5-18.5 11.8-34.2 4-15.8-7.8-67-24.8-127.5-78.8-47-42-78.8-93.2-88-109-9.2-15.8-1-24.2 7-32 7-7 15.8-18.5 23.5-24.8 7.8-6.2 10.5-10.5 15.8-18.5 5.2-7.8 2.5-15.8-2.5-23.5-5.2-7.8-35.8-86.8-49-118.2-13.2-31.2-26.5-27-35.8-27.5-9.2 0-19.8-1-30.5-1s-27.8 4-42 20-53.8 52.5-53.8 127.5c0 75 55 147.8 62.8 158.2 7.8 10.5 109 166.8 266 233.5 156.8 66.5 156.8 53 184 52 27.5-.8 86.8-35.2 99-69.2 12-34 12-63.2 8.5-69-3.5-6-14-9.2-30-17z"/></svg>
-                                Zap
-                            </a>
-                        </td>
+                    <tr onclick="selecionarParcela(this, ${n}, ${parcela})" role="button" tabindex="0" onkeydown="if(event.key === 'Enter') selecionarParcela(this, ${n}, ${parcela})">
+                        <td>${n}x</td>
+                        <td>${formatarMoeda(parcela)}</td>
+                        <td class="${diffClass}">${formatarMoeda(diffParcela)}</td>
                     </tr>
                 `;
             }
-
-            const tabelaHTML = `
-                <h2>Comparação Detalhada</h2>
-                <table>
+            document.getElementById('resultado-calculo').innerHTML = `
+                <table id="tabela-orcamento">
                     <thead>
                         <tr>
                             <th>Plano</th>
-                            <th>Sua Parcela</th>
-                            <th>Parcela Cliente</th>
-                            <th>Economia por Parcela</th>
-                            <th>Ação</th>
+                            <th>Parcela</th>
+                            <th>Diferença (vs. Normal)</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -258,10 +624,140 @@
                     </tbody>
                 </table>
             `;
-
-            document.getElementById('resultado').innerHTML = tabelaHTML;
         }
-    </script>
 
+        function selecionarParcela(linha, numParcelas, valorParcela) {
+            document.querySelectorAll('#tabela-orcamento tbody tr').forEach(tr => {
+                tr.classList.remove('selecionada');
+                tr.classList.add('nao-selecionada');
+            });
+            linha.classList.add('selecionada');
+            linha.classList.remove('nao-selecionada');
+            estado.parcelaEscolhida = { num: numParcelas, valor: valorParcela };
+            document.getElementById('btn-principal').disabled = false;
+
+            const dataPrimeira = new Date(estado.dataPrimeiraParcela);
+            estado.dataUltimaParcela = new Date(dataPrimeira.setMonth(dataPrimeira.getMonth() + numParcelas - 1));
+        }
+
+        function gerarResumoFinal() {
+            const produtosLi = estado.produtos.map(p => `<li>🛍️ ${p.nome} (${p.valor})</li>`).join('');
+            const mensagem = `
+                <h2>✅ Orçamento Finalizado</h2>
+                <p>Confira os detalhes do seu orçamento.</p>
+                <hr>
+                <p>👤 <strong>Nome Completo:</strong> ${estado.nome}</p>
+                <p>📄 <strong>CPF:</strong> ${estado.cpf}</p>
+                <p>📅 <strong>Data Atual:</strong> ${estado.dataAtual.toLocaleDateString('pt-BR')}</p>
+                <p>⭐ <strong>Nível:</strong> ${estado.clienteAtual.nivel} ${estado.clienteAtual.icone}</p>
+                <hr>
+                <p>🛒 <strong>Produtos:</strong></p>
+                <ul>${produtosLi}</ul>
+                <p>💰 <strong>Valor Total:</strong> ${formatarMoeda(estado.valorTotalProdutos)}</p>
+                <p>💵 <strong>Entrada:</strong> ${formatarMoeda(estado.valorEntrada)}</p>
+                <p>🏦 <strong>Valor Financiado:</strong> ${formatarMoeda(estado.valorFinanciado)}</p>
+                <hr>
+                <p>🗓️ <strong>Plano Escolhido:</strong> ${estado.parcelaEscolhida.num}x de ${formatarMoeda(estado.parcelaEscolhida.valor)}</p>
+                <p>📅 <strong>Primeiro Vencimento:</strong> ${estado.dataPrimeiraParcela.toLocaleDateString('pt-BR')}</p>
+                <p>📅 <strong>Último Vencimento:</strong> ${estado.dataUltimaParcela.toLocaleDateString('pt-BR')}</p>
+            `;
+            document.getElementById('resumo-final').innerHTML = mensagem;
+            gerarLinkWhatsapp();
+        }
+
+        function gerarLinkWhatsapp() {
+            const produtosTxt = estado.produtos.map(p => `🛍️ ${p.nome} (${p.valor})`).join('\n');
+            const msg = `
+*✅ ORÇAMENTO FINALIZADO*
+
+Olá! Gostaria de confirmar meu orçamento:
+
+👤 *Nome Completo:* ${estado.nome}
+📄 *CPF:* ${estado.cpf}
+📅 *Data Atual:* ${estado.dataAtual.toLocaleDateString('pt-BR')}
+⭐ *Nível:* ${estado.clienteAtual.nivel} ${estado.clienteAtual.icone}
+
+*RESUMO FINANCEIRO*
+🛒 *Produtos:*
+${produtosTxt}
+
+💰 *Valor Total:* ${formatarMoeda(estado.valorTotalProdutos)}
+💵 *Entrada:* ${formatarMoeda(estado.valorEntrada)}
+🏦 *Valor Financiado:* ${formatarMoeda(estado.valorFinanciado)}
+
+*PLANO ESCOLHIDO*
+🗓️ *Parcelamento:* ${estado.parcelaEscolhida.num}x de ${formatarMoeda(estado.parcelaEscolhida.valor)}
+📅 *Primeiro Vencimento:* ${estado.dataPrimeiraParcela.toLocaleDateString('pt-BR')}
+📅 *Último Vencimento:* ${estado.dataUltimaParcela.toLocaleDateString('pt-BR')}
+
+Aguardando confirmação! 👍
+            `.trim();
+            estado.linkWhatsappFinal = `https://wa.me/${seuNumeroWhatsapp}?text=${encodeURIComponent(msg)}`;
+        }
+
+        function calcularProximaDataPagamento() {
+            const dia = document.getElementById('dia-pagamento').value;
+            const hoje = new Date();
+            let data = new Date(hoje.getFullYear(), hoje.getMonth(), dia);
+            if (data <= hoje) data.setMonth(data.getMonth() + 1);
+            estado.dataPrimeiraParcela = data;
+
+            const diffTempo = data.getTime() - hoje.getTime();
+            const diasAte = Math.ceil(diffTempo / (1000 * 3600 * 24));
+
+            const infoDiv = document.getElementById('data-pagamento-info');
+            infoDiv.textContent = `Primeiro pagamento em ${diasAte} dia(s) (${data.toLocaleDateString('pt-BR')})`;
+            infoDiv.classList.remove('dias-perigo', 'dias-alerta', 'dias-sucesso');
+            if (diasAte <= 10) {
+                infoDiv.classList.add('dias-perigo');
+            } else if (diasAte <= 20) {
+                infoDiv.classList.add('dias-alerta');
+            } else {
+                infoDiv.classList.add('dias-sucesso');
+            }
+        }
+
+        const formatarMoeda = (v) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        const desformatarValor = (s) => parseFloat(s.replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
+        function formatarInputMoeda(e) {
+            let v = e.target.value.replace(/\D/g, '');
+            v = (parseInt(v, 10) / 100).toFixed(2).replace('.', ',');
+            e.target.value = `R$ ${v.replace(/(\d)(?=(\d{3})+(?!\d{2}))/g, '$1.')}`;
+        }
+
+        function validarCPF(cpf) {
+            cpf = String(cpf).replace(/[^\d]+/g, '');
+            if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
+            let soma = 0, resto;
+            for (let i = 1; i <= 9; i++) soma += parseInt(cpf[i - 1]) * (11 - i);
+            resto = (soma * 10) % 11;
+            if (resto === 10 || resto === 11) resto = 0;
+            if (resto !== parseInt(cpf[9])) return false;
+            soma = 0;
+            for (let i = 1; i <= 10; i++) soma += parseInt(cpf[i - 1]) * (12 - i);
+            resto = (soma * 10) % 11;
+            if (resto === 10 || resto === 11) resto = 0;
+            if (resto !== parseInt(cpf[10])) return false;
+            return true;
+        }
+
+        document.getElementById('btn-principal').addEventListener('click', proximaEtapa);
+        document.getElementById('valor-entrada').addEventListener('input', formatarInputMoeda);
+        document.getElementById('cpf').addEventListener('input', (e) => {
+            let v = e.target.value.replace(/\D/g, '')
+                .replace(/(\d{3})(\d)/, '$1.$2')
+                .replace(/(\d{3})\.(\d{3})(\d)/, '$1.$2.$3')
+                .replace(/(\d{3})\.(\d{3})\.(\d{3})(\d{1,2})/, '$1.$2.$3-$4');
+            e.target.value = v;
+        });
+        document.getElementById('dia-pagamento').addEventListener('change', calcularProximaDataPagamento);
+
+        document.addEventListener('DOMContentLoaded', () => {
+            resetarEstado();
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.getElementById('checkbox').checked = savedTheme === 'dark';
+            toggleDarkMode(savedTheme === 'dark');
+        });
+    </script>
 </body>
 </html>
